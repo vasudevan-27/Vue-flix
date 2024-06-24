@@ -1,19 +1,35 @@
 <template>
-    <div>
-        <div v-for="destination in destinations" :key="destination.imdbID" class="movie">
+    <div class="movie-list">
+      <div v-for="(destination, index) in destinations" :key="destination.imdbID" class="movie-card">
+        <div class="card">
+          <img :src="destination.Images[0]" alt="Movie Poster">
+          <div class="card-body">
             <h2>{{ destination.Title }}</h2>
             <p>{{ destination.Year }}</p>
-            <img :src=" destination.Images[0] " alt="">
-     
+            <p>Rating: {{ destination.Rated }}</p>
+            <p>Director: {{ destination.Director }}</p>
+         
+          </div>
         </div>
+        <!-- Break every 4 items -->
+        <br v-if="(index + 1) % 4 === 0">
+      </div>
     </div>
-</template>
+  </template>
+
+
+
+
+
+
+
 
 <script>
 export default {
 
     data(){
         return {
+         
             destinations: []
         }
 
@@ -25,7 +41,38 @@ export default {
         var data = await response.json()
         this.destinations = data.movies
 
-        console.log(this.destinations)
     },
 }
 </script>
+
+<style scoped>
+.movie-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+
+  padding: 20px;
+}
+
+.movie-card {
+  width: calc(25% - 20px); /* Adjust card width based on desired layout */
+  margin-bottom: 20px;
+}
+
+.card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.card img {
+  width: 100%;
+  border-radius: 8px 8px 0 0; /* Rounded corners on top */
+  height: 250px;
+  object-fit: cover;
+}
+
+.card-body {
+  padding: 10px;
+}
+</style>
