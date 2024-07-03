@@ -1,18 +1,35 @@
 <template>
-    <div>
+    <div class="home-page">
         <div class="nav">
             <div id="logo">
                 <router-link to="/"><img src="/images/logo.png" alt="Netflix-Logo"></router-link>
             </div>
             <router-link  to="/home">Home</router-link>
             <router-link   to="/login">Sign In</router-link>
-            <router-link    to="/login"><button class="logout-btn"  @click="logout" >Logout</button></router-link>
+            <input type="text" v-model="searchQuery" placeholder="Search movie...">
+            <router-link    to="/login"><button   @click="logout" >Logout</button></router-link>
         </div>
         <div class="home-content">
                 <h1>Welcome, {{ username }} </h1>
         </div>
-        <MovieCard />
-
+        <div class="movie-list">
+                <router-link
+                    v-for="(destination, index) in filteredDestination" 
+                    :key="destination.imdbID" class="movie-card"
+                    :to="{name: 'MovieCardItem', params: {imdbID: destination.imdbID}}"
+                    >
+                    <div class="card">
+                        <img :src="destination.Images[0]" alt="Movie Poster">
+                        <div class="card-body">
+                        <h4>Name: {{ destination.Title }}</h4>
+                        <p>{{ destination.Year }}</p>
+                        <p>Rating: {{ destination.Rated }}</p>        
+                        </div>
+                    </div>
+                    <!-- Break every 4 items -->
+                    <br v-if="(index + 1) % 4 === 0">
+                </router-link>
+        </div>
 
     </div>
 
@@ -20,25 +37,42 @@
 </template>
 
 <script>
-import MovieCard from '@/components/MovieCard.vue'
+
 export default {
-   
-    components : {MovieCard},
+
     data(){
         return {
-            username: ""
+            username: "",
+            destinations: [],
+            searchQuery: ""
         }
     },
     created() {
-        const storedUsername =  localStorage.getItem('username');
-        if(storedUsername) {
-            this.username =   storedUsername
+        this.username = localStorage.getItem('username');
+         console.log(this.username)
+  },
+    async mounted() {
+        const response = await fetch(`https://calf-live-bucket.s3.ap-south-1.amazonaws.com/Film.JSON`)
+        console.log(response)
+        var data = await response.json()
+        this.destinations = data.movies
+
+    },
+    computed: {
+        filteredDestination() {
+            if(!this.searchQuery.trim()){
+                return this.destinations;
+            } else {
+                const searchItem = this.searchQuery.toLowerCase();
+                return this.destinations.filter(destination => destination.Title.toLowerCase().includes(searchItem));
+
+            }
         }
     },
 
     methods: {
         logout() {
-            localStorage.removeItem('username');
+            // localStorage.removeItem('username');
             this.$router.push({ name: 'LoginPage' });
         }
    
@@ -46,7 +80,13 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
+
+.home-page {
+    width: 100%;
+    height: 100%;
+    background-color: black;
+}
 .nav {
     position: relative;
     top: 0;
@@ -54,10 +94,10 @@ export default {
     right: 0;
     margin-top: 0;
     padding: 30px;
-    background: #000;
     display: flex;
     align-items: center;
-    height: 90px;
+    height: 30px;
+    
     /* z-index: 2; */
 }
 
@@ -98,8 +138,70 @@ export default {
 }
 
 
-.home-content h1 {
+.home-content h1{
     padding: 30px;
     font-size: 3rem;
+    color: #ccc;
+  
+
 }
+
+input[type="text"] {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    color: black;
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translate(-50%, -50%);
+}
+
+.movie-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); /* Adjust card width */
+    gap: 20px; /* Gap between cards */
+    padding: 10px;
+
+
+  /* display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 10px; */
+  
+}
+
+.movie-card {
+  /* width: calc(25% - 20px); 
+   */
+   width: 100%;
+  margin-bottom: 20px;
+  transition: transform 0.2s ease;
+}
+
+.movie-card:hover {
+    transform: scale(1.05);
+}
+
+.card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  
+}
+
+.card img {
+  width: 100%;
+  border-radius: 8px 8px 0 0; /* Rounded corners on top */
+  height: 250px;
+  object-fit: cover;
+}
+
+.card-body {
+  padding: 4px;
+  color: white;
+}
+.movie-list a, .movie-list p {
+    text-decoration: none;
+}
+
 </style>

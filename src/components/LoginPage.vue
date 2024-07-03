@@ -5,13 +5,13 @@
                     <form class="form">
                         <h1>Sign In</h1>
                         <label for="username">Username</label>
-                        <small  v-if="!username && formSubmitted" class="required-label">* Required</small>
+                        <small  v-if="!username" class="required-label">* Required</small>
                         <input  v-model="username" name="username" type="text" class="input">
                         <label  for="password">Password</label>
-                        <input  v-model="password" name="password" type="text" class="input">
-                        <router-link to="/home">
-                            <button class="btn" @click.prevent="login">Sign In</button>
-                        </router-link>
+                        <input  v-model="password" name="password" type="password" class="input">
+                       
+                         <button class="btn" @click.prevent="login">Sign In</button>
+                     
                     </form>
                 </div>
                 
@@ -22,28 +22,54 @@
     <script>
 
 
-        export default {
+    export default {
         data(){
             return {
                 username: '',
                 password: '',
-                formSubmitted: false
+               
             }
         },
         methods: {
-            login() {
+            async login() {
+                try {
+                    const response = await fetch('http://localhost/vue-flix/src/api_php/login.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: this.username,
+                            password: this.password
+                        })
+                    });
 
-               this.formSubmitted = true;
-               if (!this.username.trim()) {
-                        return; // Prevent form submission if username is empty
+                    if (!response.ok) {
+                        throw new Error('Login failed');
                     }
-                localStorage.setItem('username', this.username);
-                this.$router.push({ name: 'HomePage'})
-            }
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        localStorage.setItem('username', data.username);
+                        // Authentication successful, navigate to home page
+                        this.$router.push({ name: 'HomePage'});
+                       
+                    } else {
+                        // Authentication failed, show error message
+                        alert('Invalid username or password');
+                    }
+                } catch (error) {
+                    console.error('Error logging in:', error);
+                    alert('An error occurred while logging in');
+                }
+            } 
         }
-    };
+    }
     </script>
-    <style>
+
+
+    <style scoped>
         .required-label {
             font-size: 12px;
             color: red;
@@ -72,6 +98,7 @@
     flex-direction: column;
     /* max-width:500px; */
     margin: 100px auto ;
+    color: white;
   }
   .form h1{
     margin: 20px  0;

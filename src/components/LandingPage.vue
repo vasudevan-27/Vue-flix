@@ -18,13 +18,14 @@
   </div>
 </template>
 
-<style>
+<style scoped>
 
 .showcase {
     width: 100%;
     height: 93vh;
     position: relative;
     background: url('/public/images/background.jpg') no-repeat center center/cover;
+    
 }
 
 .showcase::after {
@@ -84,6 +85,7 @@
     font-size: 3.6rem;
     line-height:0.6 ;
     margin: 0 0 2rem;
+    color: #fff;
 }
 
 .showcase-content p {
